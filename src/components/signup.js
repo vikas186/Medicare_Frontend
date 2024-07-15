@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import { TextField, Button, Typography, Container, Box } from '@mui/material';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { useNavigate } from 'react-router-dom';
 
 const Signup = () => {
   const [form, setForm] = useState({
@@ -8,14 +11,14 @@ const Signup = () => {
     password: '',
   });
 
+  const navigate = useNavigate();  // Initialize useNavigate hook
+
   const handleChange = (e) => {
     setForm({
       ...form,
       [e.target.name]: e.target.value,
     });
   };
-
-  // this function is used for submithandler
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -29,43 +32,47 @@ const Signup = () => {
       });
       const result = await response.json();
       if (response.ok) {
-        // Handle successful signup (e.g., show a success message, redirect to login page, etc.)
+        toast.success(result.message);
+        setTimeout(() => {
+          navigate('/login');
+        }, 2000);
         console.log('Signup successful', result);
       } else {
-        // Handle errors (e.g., show error messages)
+        toast.error(result.message);
         console.error('Signup error', result);
       }
     } catch (error) {
+      toast.error('Signup error');
       console.error('Signup error', error);
     }
   };
 
   return (
     <Container maxWidth="sm">
-      <Box 
-        sx={{ 
-          display: 'flex', 
-          flexDirection: 'column', 
-          alignItems: 'center', 
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
           mt: 4,
         }}
       >
         <Typography variant="h4" component="h1" gutterBottom>
           Signup
         </Typography>
-        <Box 
-          component="form" 
-          onSubmit={handleSubmit} 
-          sx={{ 
-            width: '100%', 
-            mt: 1 
+        <Box
+          component="form"
+          onSubmit={handleSubmit}
+          sx={{
+            width: '100%',
+            mt: 1
           }}
         >
           <TextField
-            label="Username"
-            name="username"
+            label="Name"
+            name="name"
             type="text"
-            value={form.username}
+            value={form.name}
             onChange={handleChange}
             variant="outlined"
             margin="normal"
@@ -105,6 +112,7 @@ const Signup = () => {
           </Button>
         </Box>
       </Box>
+      <ToastContainer />
     </Container>
   );
 };

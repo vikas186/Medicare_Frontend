@@ -1,11 +1,16 @@
 import React, { useState } from 'react';
 import { TextField, Button, Typography, Container, Box } from '@mui/material';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
   const [form, setForm] = useState({
     email: '',
     password: '',
   });
+
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setForm({
@@ -14,31 +19,52 @@ const Login = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle login logic here
-    console.log('Login form submitted', form);
+    try {
+      const response = await fetch('http://localhost:4000/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(form),
+      });
+      const result = await response.json();
+      if (response.ok) {
+        toast.success(result.message);
+        setTimeout(() => {
+          navigate('/activities');
+        }, 2000);
+        console.log('Login successful', result);
+      } else {
+        toast.error(result.message);
+        console.error('Login error', result);
+      }
+    } catch (error) {
+      toast.error('Login error');
+      console.error('Login error', error);
+    }
   };
 
   return (
     <Container maxWidth="sm">
-      <Box 
-        sx={{ 
-          display: 'flex', 
-          flexDirection: 'column', 
-          alignItems: 'center', 
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
           mt: 4,
         }}
       >
         <Typography variant="h4" component="h1" gutterBottom>
           Login
         </Typography>
-        <Box 
-          component="form" 
-          onSubmit={handleSubmit} 
-          sx={{ 
-            width: '100%', 
-            mt: 1 
+        <Box
+          component="form"
+          onSubmit={handleSubmit}
+          sx={{
+            width: '100%',
+            mt: 1
           }}
         >
           <TextField
@@ -74,6 +100,7 @@ const Login = () => {
           </Button>
         </Box>
       </Box>
+      <ToastContainer />
     </Container>
   );
 };
