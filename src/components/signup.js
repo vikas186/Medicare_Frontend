@@ -15,6 +15,8 @@ const Signup = () => {
     });
   };
 
+  // this function is used for submithandler
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
