@@ -13,15 +13,15 @@ import {
   TableRow,
   Paper,
 } from '@mui/material';
-
-
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Activities = () => {
   const [activities, setActivities] = useState([]);
   const [form, setForm] = useState({ id: null, categoryName: '', isStatus: '' });
   const [isEditing, setIsEditing] = useState(false);
 
-
+  console.log(form, "form==========")
 
   useEffect(() => {
     fetchActivities();
@@ -33,9 +33,9 @@ const Activities = () => {
       setActivities(response.data.getCategories);
     } catch (error) {
       console.error(error);
+      toast.error('Failed to fetch activities');
     }
   };
-
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -44,39 +44,61 @@ const Activities = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      if (isEditing) {
-        const response = await axios.put(`http://localhost:4000/api/category/update/${form.id}`, form);
-        setActivities(activities.map(activity => activity.id === form.id ? response.data : activity));
-        setIsEditing(false);
-      } else {
-        const response = await axios.post('http://localhost:4000/api/category/create', form);
-        setActivities([...activities, response.data]);
-      }
-      setForm({ id: null, categoryName: '', isStatus: '' });
+        // Constructing the data payload based on editing status
+        const payload = {
+            id: form.id,
+            categoryName: form.categoryName,
+            isStatus: form.isStatus,
+        };
+
+        if (isEditing) {
+            console.log('Updating activity with ID:', form.id);
+            const response = await axios.put(`http://localhost:4000/api/category/update/${form.id}`, payload);
+            console.log('Update response:', response.data);
+            setActivities(activities.map(activity => activity._id === form.id ? response.data : activity));
+            setIsEditing(false);
+            toast.success(response.data.message || 'Activity updated successfully');
+        } else {
+            const response = await axios.post('http://localhost:4000/api/category/create', payload);
+            setActivities([...activities, response.data]);
+            toast.success(response.data.message || 'Activity created successfully');
+        }
+
+        // Resetting form state
+        setForm({ id: null, categoryName: '', isStatus: '' });
     } catch (error) {
-      console.error(error);
+        console.error('Error details:', error.response ? error.response.data : error.message);
+        toast.error(error.response?.data?.message || 'Failed to save activity');
     }
-  };
+};
+
 
   const handleEdit = (activity) => {
+    setForm({ id: activity._id, categoryName: activity.categoryName, isStatus: activity.isStatus });
     setIsEditing(true);
-    setForm(activity);
   };
+
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:4000/api/category/delete/${id}`);
-      setActivities(activities.filter(activity => activity.id !== id));
+      const response = await axios.delete('http://localhost:4000/api/category/delete', {
+        data: { id }  // Sending ID in the request body
+      });
+      toast.success(response.data.message || 'Activity deleted successfully');
+      fetchActivities();
     } catch (error) {
-      console.error(error);
+      console.error('Delete error:', error.response?.data);
+      toast.error(error.response?.data?.message || 'Failed to delete activity');
     }
   };
 
+
   return (
-    <Container maxWidth="md" className="py-4">
-      <Typography variant="h4" gutterBottom>
+    <Container maxWidth="md" className="py-8">
+      <Typography variant="h4" gutterBottom style={{ marginTop: '30px' }}>
         Activities
       </Typography>
+
       <form onSubmit={handleSubmit} className="mb-4 flex space-x-2">
         <TextField
           name="categoryName"
@@ -110,26 +132,24 @@ const Activities = () => {
           <TableHead>
             <TableRow>
               <TableCell>Category Name</TableCell>
-              <TableCell>Status</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {activities.map(activity => (
-              <TableRow key={activity.id}>
+              <TableRow key={activity._id}>
                 <TableCell>{activity.categoryName}</TableCell>
-                <TableCell>{activity.isStatus}</TableCell>
                 <TableCell>
                   <Button
                     onClick={() => handleEdit(activity)}
                     variant="contained"
-                    color="secondary"
+                    color="primary"
                     style={{ marginRight: '8px' }}
                   >
                     Edit
                   </Button>
                   <Button
-                    onClick={() => handleDelete(activity.id)}
+                    onClick={() => handleDelete(activity._id)}
                     variant="contained"
                     color="error"
                   >
@@ -141,6 +161,7 @@ const Activities = () => {
           </TableBody>
         </Table>
       </TableContainer>
+      <ToastContainer />
     </Container>
   );
 };
