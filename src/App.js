@@ -5,6 +5,7 @@ import { Container, AppBar, Toolbar, Typography, Button, List, ListItem } from '
 import Activities from './components/Activities';
 import Signup from './components/signup';
 import Login from './components/login';
+import ChatComponent from './components/chat';
 
 const theme = createTheme({
   palette: {
@@ -35,6 +36,7 @@ function App() {
             <Button color="inherit" component={Link} to="/signup">Signup</Button>
             <Button color="inherit" component={Link} to="/login">Login</Button>
             <Button color="inherit" component={Link} to="/activities">Activities</Button>
+            <Button color="inherit" component={Link} to="/chat">ChatComponent</Button>
           </Toolbar>
         </AppBar>
         <Container>
@@ -42,6 +44,7 @@ function App() {
             <Route path="/signup" element={<Signup />} />
             <Route path="/login" element={<Login />} />
             <Route path="/activities" element={<Activities />} />
+            <Route path="/chat" element={<ChatComponent />} />
           </Routes>
         </Container>
       </Router>

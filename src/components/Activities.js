@@ -21,7 +21,6 @@ const Activities = () => {
   const [form, setForm] = useState({ id: null, categoryName: '', isStatus: '' });
   const [isEditing, setIsEditing] = useState(false);
 
-  console.log(form, "form==========")
 
   useEffect(() => {
     fetchActivities();
@@ -31,6 +30,7 @@ const Activities = () => {
     try {
       const response = await axios.get('http://localhost:4000/api/category');
       setActivities(response.data.getCategories);
+      fetchActivities();
     } catch (error) {
       console.error(error);
       toast.error('Failed to fetch activities');
@@ -44,33 +44,32 @@ const Activities = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-        // Constructing the data payload based on editing status
-        const payload = {
-            id: form.id,
-            categoryName: form.categoryName,
-            isStatus: form.isStatus,
-        };
+      const payload = {
+        id: form.id,
+        categoryName: form.categoryName,
+        isStatus: form.isStatus,
+      };
 
-        if (isEditing) {
-            console.log('Updating activity with ID:', form.id);
-            const response = await axios.put(`http://localhost:4000/api/category/update/${form.id}`, payload);
-            console.log('Update response:', response.data);
-            setActivities(activities.map(activity => activity._id === form.id ? response.data : activity));
-            setIsEditing(false);
-            toast.success(response.data.message || 'Activity updated successfully');
-        } else {
-            const response = await axios.post('http://localhost:4000/api/category/create', payload);
-            setActivities([...activities, response.data]);
-            toast.success(response.data.message || 'Activity created successfully');
-        }
+      if (isEditing) {
+        console.log('Updating activity with ID:', form.id);
+        const response = await axios.put(`http://localhost:4000/api/category/update/${form.id}`, payload);
+        console.log('Update response:', response.data);
+        setActivities(activities.map(activity => activity._id === form.id ? response.data : activity));
+        setIsEditing(false);
+        toast.success(response.data.message || 'Activity updated successfully');
+      } else {
+        const response = await axios.post('http://localhost:4000/api/category/create', payload);
+        setActivities([...activities, response.data]);
+        toast.success(response.data.message || 'Activity created successfully');
+      }
 
-        // Resetting form state
-        setForm({ id: null, categoryName: '', isStatus: '' });
+      // Resetting form state
+      setForm({ id: null, categoryName: '', isStatus: '' });
     } catch (error) {
-        console.error('Error details:', error.response ? error.response.data : error.message);
-        toast.error(error.response?.data?.message || 'Failed to save activity');
+      console.error('Error details:', error.response ? error.response.data : error.message);
+      toast.error(error.response?.data?.message || 'Failed to save activity');
     }
-};
+  };
 
 
   const handleEdit = (activity) => {
@@ -95,7 +94,11 @@ const Activities = () => {
 
   return (
     <Container maxWidth="md" className="py-8">
-      <Typography variant="h4" gutterBottom style={{ marginTop: '30px' }}>
+      <Typography
+        variant="h4"
+        gutterBottom
+        style={{ marginTop: '30px', textAlign: 'center' }}
+      >
         Activities
       </Typography>
 
